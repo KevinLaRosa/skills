@@ -1,0 +1,13 @@
+{
+  "name": "la-rosa-skills",
+  "version": "1.0.0",
+  "description": "CLI to list and install custom AI agent skills.",
+  "main": "bin/skills.js",
+  "bin": {
+    "skills": "./bin/skills.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "license": "Proprietary"
+}

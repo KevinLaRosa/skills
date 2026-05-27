@@ -1,13 +1,18 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
-const SKILLS_DIR = path.join(__dirname, '..', 'skills');
+const SKILLS_DIR = path.join(import.meta.dir, '..', 'skills');
 const TARGET_DIR = path.join(os.homedir(), '.gemini', 'config', 'skills');
 
-function printHelp() {
+interface SkillMetadata {
+  name: string;
+  description: string;
+}
+
+function printHelp(): void {
   console.log(`
 Usage:
   npx skills list                  - List all available skills
@@ -16,32 +21,39 @@ Usage:
 `);
 }
 
-function parseFrontmatter(content) {
+function parseFrontmatter(content: string): SkillMetadata {
   const match = content.match(/^---\r?\n([\s\S]+?)\r?\n---/);
   if (!match) return { name: '', description: '' };
   
   const yamlText = match[1];
-  const metadata = {};
+  const metadata: Partial<SkillMetadata> = {};
+  
   yamlText.split('\n').forEach(line => {
     const parts = line.split(':');
     if (parts.length >= 2) {
       const key = parts[0].trim();
       const val = parts.slice(1).join(':').trim();
       // Remove optional quotes
-      metadata[key] = val.replace(/^["']|["']$/g, '');
+      if (key === 'name' || key === 'description') {
+        metadata[key] = val.replace(/^["']|["']$/g, '');
+      }
     }
   });
-  return metadata;
+  
+  return {
+    name: metadata.name || '',
+    description: metadata.description || ''
+  };
 }
 
-function listSkills() {
+function listSkills(): void {
   if (!fs.existsSync(SKILLS_DIR)) {
     console.log("No skills directory found.");
     return;
   }
   
   const files = fs.readdirSync(SKILLS_DIR);
-  const skills = [];
+  const skills: Array<{ id: string; name: string; description: string }> = [];
   
   files.forEach(file => {
     const fullPath = path.join(SKILLS_DIR, file);
@@ -72,7 +84,7 @@ function listSkills() {
   console.log("");
 }
 
-function copyFolderSync(from, to) {
+function copyFolderSync(from: string, to: string): void {
   fs.mkdirSync(to, { recursive: true });
   fs.readdirSync(from).forEach(element => {
     const fromPath = path.join(from, element);
@@ -85,7 +97,7 @@ function copyFolderSync(from, to) {
   });
 }
 
-function installSkill(name) {
+function installSkill(name: string | undefined): void {
   if (!name) {
     console.error("Error: Please specify the name of the skill to install.");
     printHelp();
@@ -103,7 +115,7 @@ function installSkill(name) {
   try {
     copyFolderSync(sourcePath, destPath);
     console.log(`\x1b[32mSuccessfully installed skill '${name}'!\x1b[0m`);
-  } catch (err) {
+  } catch (err: any) {
     console.error("Failed to install skill:", err.message);
     process.exit(1);
   }

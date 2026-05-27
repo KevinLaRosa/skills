@@ -8,7 +8,7 @@ This repository contains custom skills for AI coding agents (such as Antigravity
 .
 ├── package.json          # Package config for global link
 ├── bin/
-│   └── skills.js         # Command-Line Installer script
+│   └── skills.ts         # Command-Line Installer script (TypeScript)
 └── skills/               # Reusable agent skills
     └── facturation-api/  # Facturation.pro API Skill
         ├── SKILL.md
@@ -18,32 +18,32 @@ This repository contains custom skills for AI coding agents (such as Antigravity
 
 ## CLI Usage
 
-You can use the local installer script to list and install skills to your local AI Agent configuration path (`~/.gemini/config/skills/`).
+You can use the local installer script with **Bun** to list and install skills to your local AI Agent configuration path (`~/.gemini/config/skills/`).
 
 ### Listing available skills
 
 ```bash
-node bin/skills.js list
+bun bin/skills.ts list
 ```
 
 ### Installing a skill
 
 ```bash
-node bin/skills.js install <skill-name>
+bun bin/skills.ts install <skill-name>
 ```
 
 ---
 
 ## Global CLI installation (Optional)
 
-To make the `skills` command available globally in your terminal, run `npm link` from the root of this repository:
+To make the `skills` command available globally in your terminal, run `bun link` (or `npm link`) from the root of this repository:
 
 ```bash
 cd /Users/Roger/Developer/skills
-npm link
+bun link
 ```
 
-Once linked, you can run the commands directly from anywhere:
+Once linked, you can run the commands directly from anywhere (executed automatically via Bun):
 
 ```bash
 skills list

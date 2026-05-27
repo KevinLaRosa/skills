@@ -1,14 +1,17 @@
 # Custom AI Agent Skills
 
-This repository contains custom skills for AI coding agents (such as Antigravity, Claude Code, and others) conforming to the [agentskills.io](https://agentskills.io/) standard.
+This repository contains custom skills for AI coding agents (such as Antigravity, Claude Code, Cursor, and others) conforming to the [agentskills.io](https://agentskills.io/) standard.
+
+Rather than maintaining a custom installer CLI, this repository is designed to be fully compatible with the official **`vercel-labs/skills`** CLI (package name `skills` on npm). You can discover, list, install, and update these skills seamlessly across different projects and AI agents.
+
+---
 
 ## Directory Structure
 
 ```text
 .
-├── package.json          # Package config for global link
-├── bin/
-│   └── skills.ts         # Command-Line Installer script (TypeScript)
+├── package.json          # Repository metadata
+├── README.md             # Documentation
 └── skills/               # Reusable agent skills
     └── facturation-api/  # Facturation.pro API Skill
         ├── SKILL.md
@@ -16,51 +19,70 @@ This repository contains custom skills for AI coding agents (such as Antigravity
             └── api_reference.md
 ```
 
-## CLI Usage
+---
 
-You can use the local installer script with **Bun** to list and install skills.
+## Installation via Official `skills` CLI
 
-### Listing available skills
+You can install any skill from this repository using `npx skills`. The CLI automatically detects your installed AI agents (e.g. Cursor, Claude Code, Cline, etc.) and symlinks or copies the skills to their respective directories.
 
-```bash
-bun bin/skills.ts list
-```
+### 1. From the GitHub Repository (Remote)
 
-### Installing a skill
-
-By default, skills are installed to the **project scope** (under `./.agents/skills/`):
+To install a specific skill directly from GitHub:
 
 ```bash
-bun bin/skills.ts install <skill-name>
+# Install facturation-api to your current project
+npx skills add KevinLaRosa/skills --skill facturation-api
+
+# Install facturation-api globally (user-level)
+npx skills add KevinLaRosa/skills --skill facturation-api -g
+
+# Install all skills from this repository to your project
+npx skills add KevinLaRosa/skills --all
 ```
 
-#### Options:
+### 2. From the Local Repository Clone
 
-- **Global Install (`-g` or `--global`):** Installs the skill globally for all projects in your user config (`~/.gemini/config/skills/`):
-  ```bash
-  bun bin/skills.ts install <skill-name> --global
-  ```
+If you are developing skills locally in `/Users/Roger/Developer/skills/`, you can install them directly from your local path:
 
-- **Custom Directory (`--skills-dir <path>`):** Installs the skill to a specific directory path:
-  ```bash
-  bun bin/skills.ts install <skill-name> --skills-dir /path/to/custom/dir
-  ```
+```bash
+# Install facturation-api from your local clone to your current project
+npx skills add /Users/Roger/Developer/skills --skill facturation-api
+
+# Install facturation-api from your local clone globally
+npx skills add /Users/Roger/Developer/skills --skill facturation-api -g
+```
 
 ---
 
-## Global CLI installation (Optional)
+## Useful CLI Options
 
-To make the `skills` command available globally in your terminal, run `bun link` (or `npm link`) from the root of this repository:
+The official `skills` CLI supports several flags when adding skills:
+
+*   `-g, --global`: Install the skill globally (user-level) instead of project-level.
+*   `-a, --agent <agents>`: Target specific AI agents (e.g., `-a claude-code cursor` or `-a *` for all agents).
+*   `-s, --skill <skills>`: Specify skill names to install (e.g., `-s facturation-api`).
+*   `-y`: Non-interactive mode (skips prompts).
+*   `--copy`: Copy files instead of symlinking to agent directories.
+*   `--all`: Shorthand for `--skill '*' --agent '*' -y`.
+
+---
+
+## Managing Installed Skills
+
+Use these commands in your project directories to manage your installed skills:
 
 ```bash
-cd /Users/Roger/Developer/skills
-bun link
+# List project-scoped skills
+npx skills list
+
+# List globally-scoped skills
+npx skills list -g
+
+# Remove a skill
+npx skills remove facturation-api
+
+# Update all installed skills to their latest versions
+npx skills update
 ```
 
-Once linked, you can run the commands directly from anywhere:
-
-```bash
-skills list
-skills install facturation-api         # Installs locally in current directory
-skills install facturation-api -g      # Installs globally in ~/.gemini/config/skills/
-```
+For more details, visit the official [vercel-labs/skills](https://github.com/vercel-labs/skills) repository or explore the ecosystem at [skills.sh](https://skills.sh).

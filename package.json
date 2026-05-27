@@ -1,13 +1,6 @@
 {
-  "name": "la-rosa-skills",
+  "name": "kevin-la-rosa-skills",
   "version": "1.0.0",
-  "description": "CLI to list and install custom AI agent skills.",
-  "main": "bin/skills.ts",
-  "bin": {
-    "skills": "./bin/skills.ts"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
+  "description": "Custom AI agent skills for coding assistants, compatible with vercel-labs/skills CLI.",
   "license": "Proprietary"
 }

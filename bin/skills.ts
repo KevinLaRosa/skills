@@ -5,18 +5,30 @@ import path from 'path';
 import os from 'os';
 
 const SKILLS_DIR = path.join(import.meta.dir, '..', 'skills');
-const TARGET_DIR = path.join(os.homedir(), '.gemini', 'config', 'skills');
+const GLOBAL_TARGET_DIR = path.join(os.homedir(), '.gemini', 'config', 'skills');
+const LOCAL_TARGET_DIR = path.join(process.cwd(), '.agents', 'skills');
 
 interface SkillMetadata {
   name: string;
   description: string;
 }
 
+interface CliOptions {
+  global: boolean;
+  skillsDir?: string;
+}
+
 function printHelp(): void {
   console.log(`
 Usage:
   npx skills list                  - List all available skills
-  npx skills install <skill-name>  - Install a skill globally
+  npx skills install <skill-name>  - Install a skill locally in the project (default: ./.agents/skills/)
+  
+Options for installation:
+  -g, --global                     - Install globally in user directory (~/.gemini/config/skills/)
+  --skills-dir <path>              - Install in a custom directory
+  
+Other:
   npx skills help                  - Show this help message
 `);
 }
@@ -97,7 +109,7 @@ function copyFolderSync(from: string, to: string): void {
   });
 }
 
-function installSkill(name: string | undefined): void {
+function installSkill(name: string | undefined, options: CliOptions): void {
   if (!name) {
     console.error("Error: Please specify the name of the skill to install.");
     printHelp();
@@ -110,8 +122,22 @@ function installSkill(name: string | undefined): void {
     process.exit(1);
   }
 
-  const destPath = path.join(TARGET_DIR, name);
-  console.log(`Installing skill '${name}' to ${destPath}...`);
+  let destParentDir: string;
+  let targetScope: string;
+
+  if (options.skillsDir) {
+    destParentDir = path.resolve(options.skillsDir);
+    targetScope = `custom path (${destParentDir})`;
+  } else if (options.global) {
+    destParentDir = GLOBAL_TARGET_DIR;
+    targetScope = "global (~/.gemini/config/skills/)";
+  } else {
+    destParentDir = LOCAL_TARGET_DIR;
+    targetScope = "project scope (./.agents/skills/)";
+  }
+
+  const destPath = path.join(destParentDir, name);
+  console.log(`Installing skill '${name}' to ${targetScope}...`);
   try {
     copyFolderSync(sourcePath, destPath);
     console.log(`\x1b[32mSuccessfully installed skill '${name}'!\x1b[0m`);
@@ -121,8 +147,33 @@ function installSkill(name: string | undefined): void {
   }
 }
 
-const args = process.argv.slice(2);
-const command = args[0];
+function parseArgs(args: string[]) {
+  const options: CliOptions = { global: false };
+  const commandArgs: string[] = [];
+  
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '-g' || arg === '--global') {
+      options.global = true;
+    } else if (arg === '--skills-dir') {
+      const next = args[i + 1];
+      if (next && !next.startsWith('-')) {
+        options.skillsDir = next;
+        i++;
+      } else {
+        console.error("Error: --skills-dir requires a directory path.");
+        process.exit(1);
+      }
+    } else {
+      commandArgs.push(arg);
+    }
+  }
+  return { commandArgs, options };
+}
+
+const rawArgs = process.argv.slice(2);
+const { commandArgs, options } = parseArgs(rawArgs);
+const command = commandArgs[0];
 
 switch (command) {
   case 'list':
@@ -131,7 +182,7 @@ switch (command) {
     break;
   case 'install':
   case 'add':
-    installSkill(args[1]);
+    installSkill(commandArgs[1], options);
     break;
   case 'help':
   case '-h':
